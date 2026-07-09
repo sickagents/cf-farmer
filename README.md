@@ -27,9 +27,9 @@ pip install curl_cffi python-dotenv requests
 cat > .env << 'EOF'
 IMAP_HOST=imap.gmail.com
 IMAP_PORT=993
-IMAP_USER=wllmstevan@gmail.com
+IMAP_USER=you@gmail.com
 IMAP_PASS=your-app-password
-DOMAIN=airwallex.fun
+DOMAIN=yourdomain.com
 EOF
 
 # 4. Patch farmer.py untuk pakai solver lokal
