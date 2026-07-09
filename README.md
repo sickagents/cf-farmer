@@ -88,10 +88,10 @@ BOTERDROP_URL=http://localhost:8000 python3 farmer.py --count 1
 python3 farmer.py --count 1 --inject sqlite
 
 # Remote mode - inject to 9router on VPS
-python3 farmer.py --count 1 --inject http://43.159.60.190:20128
+python3 farmer.py --count 1 --inject http://YOUR_VPS_IP:20128
 
 # Or set via env
-CF_INJECT_MODE=http://43.159.60.190:20128 python3 farmer.py --count 1
+CF_INJECT_MODE=http://YOUR_VPS_IP:20128 python3 farmer.py --count 1
 ```
 
 
