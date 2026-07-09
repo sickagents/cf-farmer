@@ -255,6 +255,7 @@ def save_account(acc):
 # --- 9router DB auto-inject ---
 ROUTER_DB = Path(os.path.expanduser("~/.9router/db/data.sqlite"))
 ROUTER_CONNECTION_NAME = "WaguriAgent"
+INJECT_MODE = os.environ.get("CF_INJECT_MODE", "sqlite")  # or http://HOST:PORT
  
 def _is_transient_sqlite_error(e: Exception) -> bool:
     """True if the error is a transient WAL/checkpoint contention issue.
@@ -311,6 +312,32 @@ def _inject_once(acc, api_token, account_id, now):
         db.close()
  
  
+def _inject_http(acc, api_token, account_id):
+    """Inject via 9router HTTP API (remote mode)."""
+    import urllib.request
+    url = f"{INJECT_MODE.rstrip('/')}/api/providers"
+    payload = json.dumps({
+        "provider": "cloudflare-ai",
+        "name": f"{ROUTER_CONNECTION_NAME} #{account_id[:8]}",
+        "apiKey": api_token,
+        "accountId": account_id,
+        "providerSpecificData": {
+            "accountId": account_id,
+            "connectionProxyEnabled": False,
+            "connectionProxyUrl": "",
+            "connectionNoProxy": "",
+        },
+    }).encode()
+    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+            conn = data.get("connection", {})
+            print(f"    [9router:http] injected -> {conn.get('id', '?')} @ {INJECT_MODE}")
+    except Exception as e:
+        print(f"    [9router:http] error: {e}")
+
+
 def inject_to_9router(acc):
     """Inject a Cloudflare AI account into the 9router providerConnections table.
  
@@ -509,8 +536,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--count", type=int, default=1)
     ap.add_argument("--verify-tokens", action="store_true", help="re-check saved accounts' tokens")
+    ap.add_argument("--inject", default="sqlite",
+                    help="9router inject mode: 'sqlite' (local DB) or 'http://HOST:PORT' (remote API)")
     args = ap.parse_args()
  
+    global INJECT_MODE
+    INJECT_MODE = args.inject if args.inject else os.environ.get("CF_INJECT_MODE", "sqlite")
+
     captcha_key = get_captcha_key()
     if not captcha_key:
         print("[!] No SOLVERIFY_API_KEY in .env"); return

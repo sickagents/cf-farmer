@@ -81,6 +81,20 @@ print(f'Token: {data[\"token\"][:50]}...' if data.get('token') else f'Error: {da
 BOTERDROP_URL=http://localhost:8000 python3 farmer.py --count 1
 ```
 
+## 9router Inject Modes
+
+```bash
+# Local mode (default) - same machine as 9router
+python3 farmer.py --count 1 --inject sqlite
+
+# Remote mode - inject to 9router on VPS
+python3 farmer.py --count 1 --inject http://43.159.60.190:20128
+
+# Or set via env
+CF_INJECT_MODE=http://43.159.60.190:20128 python3 farmer.py --count 1
+```
+
+
 ## Batch Farm
 
 ```bash
@@ -132,6 +146,7 @@ host:port:user:pass
 | `IMAP_PASS` | - | Gmail app password |
 | `DOMAIN` | - | Email domain |
 | `BOTERDROP_URL` | http://localhost:8000 | Solver URL |
+| `CF_INJECT_MODE` | sqlite | 9router inject: sqlite or http://HOST:PORT |
 
 ## Flow
 
